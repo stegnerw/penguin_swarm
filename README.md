@@ -12,3 +12,6 @@ Because this is a class project, contributions will only be allowed from:
 Once the class is over after this semester, anyone is free to contribute.
 
 Please see the [contributing guidelines](docs/CONTRIBUTING.md).
+
+# License
+This project is licensed under [LGPLv3](LICENSE.md).
