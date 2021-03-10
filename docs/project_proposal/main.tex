@@ -1,0 +1,92 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage[
+	citecounter,
+	labelnumber,
+	backend=biber,
+	bibencoding=utf8,
+	sorting=none
+]{biblatex}
+\addbibresource{./bibliography.bib}
+
+\title{Complex Systems Project Proposal}
+\author{
+	Wayne Stegner % Laura's Brother
+	\and
+	Zuguang Liu
+	\and
+	Siddharth Barve
+}
+\date{\vspace{-36pt}}
+
+\begin{document}
+	\maketitle
+
+	\vspace{-10pt}
+	\section*{Goals and Aims of the Project}
+	\vspace{-6pt}
+	\par The goal of this project is to emulate the naturally emergent behavior
+	of a penguin colony using swarm-based coordination.
+	Our first aim is to design a set of behavioral rules for the individual
+	penguins which result in emergent behavior similar to that of a natural
+	penguin colony and maximizes survival.
+	Our second aim, if time permits, is to evolve the rule set for the penguin
+	colony to attain a similar emergent behavior as described in our first aim.
+	We would like to do a thorough comparison of the rules defined in the first
+	aim and those derived in the second aim.
+
+	\vspace{-10pt}
+	\section*{Description of the Proposed Work}
+	\vspace{-6pt}
+	\par In this project, we introduce a user-defined colony of penguins into
+	an environment to observe social thermal-regulation of the population.
+	Common (or similar) rules for individual penguins and the environment (with
+	spatial and temporal variations) are set up such that the collective
+	behavior of the penguin colony resembles that in nature.
+	The specific rules will be explored empirically or algorithmically to
+	simulate the natural constraints.
+	These constraints will include heat transfer between individual penguins in
+	the population and between penguins and their ambient environment.
+	Heat transfer will be determined by the neighborhood of penguins.
+	An additional constraint will be a nominal temperature range that must be
+	maintained by the individual penguins for survival; prolonged exposure of
+	temperatures outside of this range will result in death of the individual.
+	Our hypothesis is their huddling pattern is formed by the egoistic survival
+	instinct from the penguin individuals, and that this behavior can be
+	realized through evolutionary methods.
+
+	\vspace{-10pt}
+	\section*{Motivation for the Project}
+	\vspace{-6pt}
+	\par Social thermal-regulation is an interesting animal behavior in social
+	mammals, birds, and reptiles \cite{campbell_social_2018}.
+	Understanding it helps to engineer energy-efficient solutions for us or
+	artificial robots under extreme environments.
+	Additionally, being able to evolve the behavior of the individual agents to
+	achieve a complex collective behavior allows for more adaptive swarm
+	robotic systems.
+	We like penguins.
+	Honestly, it's just that.
+
+	\vspace{-10pt}
+	\section*{Metrics for Evaluating Success or Failure}
+	\vspace{-6pt}
+	\par The success of the first aim is determined by whether the predefined
+	rules result in a collective behavior that is favorable to the survival of
+	the penguin group.
+	The success will be proportional to the percent of surviving population
+	after a user-defined period of time, as well as evaluating metrics such as
+	the average warmth of the colony.
+	A more subjective measure of evaluating the success of the project is to
+	analyze the degree of emulation of natural penguin colony behavior.
+	We will document the behavior of the penguins by exporting a 2D frame for
+	each discrete time step which will be culminated into a GIF.
+	The success of the second aim will be determined by the ability to achieve
+	the success of the first aim, with a specified degree of error, or better.
+	Additionally, the success of the second aim will be determined by
+	improvement in simplicity, fewer hyper-parameters, and computation time.
+
+	\vspace{-10pt}
+	\printbibliography
+\end{document}
