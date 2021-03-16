@@ -8,7 +8,7 @@ Created on Wed Mar 10 17:38:13 2021
 
 class pengy:
     
-    def __init__ (self, x, y, body=1, sense=3, temp=38, tolerance=10, SA=1, mass=1, h=0.001, c=1, metabolism=0.1, MS=1):
+    def __init__(self, x, y, body=1, sense=10, temp=38, tolerance=1, SA=1, mass=1, h=0.01, c=1, metabolism=0.05, MS=0.1):
         self.x=x;
         self.y=y;
         self.body=body;
