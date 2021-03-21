@@ -14,4 +14,4 @@ Once the class is over after this semester, anyone is free to contribute.
 Please see the [contributing guidelines](docs/CONTRIBUTING.md).
 
 # License
-This project is licensed under [LGPLv3](LICENSE.md).
+This project is licensed under the [MIT License](LICENSE.md).
