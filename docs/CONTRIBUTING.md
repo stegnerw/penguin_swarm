@@ -1,27 +1,27 @@
 # Commits
 - **Commit small, commit often**!
 - It is okay to commit non-functional code to a branch.
-  - The branches keep it isolated from other people's work.
+	- The branches keep it isolated from other people's work.
 - **Do not push code directly to `main`**.
 
 ## Commit Messages
 - [Avoid this](https://xkcd.com/1296/).
 - Commit messages have 2 major components: a title and a description.
 - Titles:
-  - Limited to 50 characters.
-  - High-level description of changes made.
-  - Use [imperative mood](https://en.wikipedia.org/wiki/Imperative_mood).
-  - Complete the sentence "If applied, this commit will `<commit title>`."
-	- Do not end with a period.
+	- Limited to 50 characters.
+	- High-level description of changes made.
+	- Use [imperative mood](https://en.wikipedia.org/wiki/Imperative_mood).
+	- Complete the sentence "If applied, this commit will `<commit title>`."
+		- Do not end with a period.
 - Blank line after the title.
 - Description:
-  - Limited to 72 characters.
-  - Explain *what* changes and *why* those changes are made.
-  - Don't discuss *how* because that should be evident in the code.
-	-	Description can be omitted for simple commits.
+	- Limited to 72 characters.
+	- Explain *what* changes and *why* those changes are made.
+	- Don't discuss *how* because that should be evident in the code.
+		- Description can be omitted for simple commits.
 - Avoid using `git commit -m "<commit message here>"`.
-  - This hinders formatting the message.
-  - Can be okay for title-only commits.
+	- This hinders formatting the message.
+	- Can be okay for title-only commits.
 
 - Commit message example:
 ```
@@ -47,9 +47,9 @@ understand the purpose of the commit.
 - Different code changes will be organized in [branches](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-branches).
 - Each issue should have its own branch.
 	- Naming of issue-based branches should be `issue-n`, where `n` is the number of the issue.
-  - All code written should be done in an issue branch.
+	- All code written should be done in an issue branch.
 - ***DO NOT PUSH CODE DIRECTLY TO `main`.***
-  - This will be done with pull requests.
+	- This will be done with pull requests.
 
 # Pull Requests
 - Branches should be merged into their respective source branches through [pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
@@ -66,6 +66,9 @@ understand the purpose of the commit.
 
 # Python Style
 - Follow [PEP8](https://www.python.org/dev/peps/pep-0008/) style.
+	- [Pylint](https://github.com/PyCQA/pylint) for linting.
+	- [YAPF](https://github.com/google/yapf) for fixing formatting.
+	- If you use vim, I recommend [ALE](https://github.com/dense-analysis/ale). Otherwise, you're on your own with setup.
 - Use [NumPy docstrings](https://numpydoc.readthedocs.io/en/latest/format.html).
 - Explicitly state types for function parameters and return types.
-  - See [this documentation](https://docs.python.org/3/library/typing.html).
+	- See [this documentation](https://docs.python.org/3/library/typing.html).
