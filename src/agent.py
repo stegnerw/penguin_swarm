@@ -59,30 +59,30 @@ class Agent(ABC):
         ...
 
     @property
-    def body_size(self):
+    def body_size(self) -> float:
         """float: Radius of the agent body."""
         return self._body_size
 
     @property
-    def sense_radius(self):
+    def sense_radius(self) -> float:
         """float: Radius of the agent sensing other agents."""
         return self._sense_radius
 
     @property
-    def alive(self):
+    def alive(self) -> bool:
         """bool: Whether or not the penguin is alive."""
         return self._alive
 
     @alive.setter
-    def alive(self, alive: bool):
+    def alive(self, alive: bool) -> None:
         self._alive = alive
 
-    def kill(self):
+    def kill(self) -> None:
         """Kill the current agent."""
         self.alive = False
 
     @property
-    def body_temp(self):
+    def body_temp(self) -> float:
         """float: Internal body temperature of the agent.
 
         The setter checks the temperature thresholds and the agent dies if the
@@ -91,8 +91,18 @@ class Agent(ABC):
         return self._body_temp
 
     @body_temp.setter
-    def body_temp(self, body_temp):
+    def body_temp(self, body_temp: float) -> None:
         self._body_temp = body_temp
         if (self._body_temp > self._body_temp_high_threshold
                 or self._body_temp < self._body_temp_low_threshold):
             self.alive = False
+
+    @property
+    def position(self) -> tuple(float):
+        """tuple(float): Current coordinates of the agent (x, y)"""
+        return (self._x_pos, self._y_pos)
+
+    @position.setter
+    def position(self, position: tuple(float)) -> None:
+        self._x_pos = position[0]
+        self._y_pos = position[1]
