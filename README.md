@@ -15,3 +15,14 @@ Please see the [contributing guidelines](docs/CONTRIBUTING.md).
 
 # License
 This project is licensed under the [MIT License](LICENSE.md).
+
+# Liu's Prototype Branch
+
+A minimal setup to test an idea about "blind temp-sensing-only" penguin colony. It did poor job on swarming unfortunately. 
+
+`blind_pen_proto.py` is the implementation of the idea. Running it as main generates plots in the current directory.
+
+`simulate.py` incorporates the above code, and converts the plots into a gif `animation.gif`.
+
+
+
