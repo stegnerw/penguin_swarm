@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+
+\setlength{\parindent}{0pt}
+
+\title{EECE7065 --- Project Report 1}
+\author{\
+		Wayne Stegner
+		\and
+		Zuguang Liu
+		\and
+		Siddharth Barve
+}
+\date{\vspace{-36pt}}
+
+\begin{document}
+		\maketitle
+
+		\par Our project is studying the penguin colony’s social thermoregulation
+		as an emergent swarm behavior.
+		Our progress thus far include relevant literature review, preliminary
+		design simulation, making decisions as well as constructing the base
+		framework for the final design.
+		Through literature study, we have learned some general biological facts
+		about the penguin colony, but have not found similar research that
+		addresses the self-emergent aspect of the behavior.
+		After implementing a preliminary design based on general thermodynamic
+		rules, we were able to observe huddling behavior in the penguins to
+		regulate body temperature in the cold environment.
+		However, we found that implementing features, such as collision detection
+		and a better heat transfer model, on a continuous space is quite
+		challenging.
+		Thus, we decided to discretely place penguin entities in a discrete grid of
+		tessellating shapes, starting with square as a solution easiest to
+		implement.
+		We then started to build the environment framework for this solution.
+		Our future plan is to enhance the framework we have established as well as
+		specify different policies for the penguin agents.
+		Eventually, we will put together the final design and hopefully be able to
+		simulate the colony to be as realistic as possible.
+		Some specific areas we hope to investigate in the swarm behavior include
+		the effect of different decision making models, the effect of taking away
+		certain senses, the radius of the senses, environmental changes, and the
+		ability to evolve the decision models.
+
+\end{document}
