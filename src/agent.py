@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 """This module contains the Agent abstract base class.
 """
@@ -26,10 +27,10 @@ class Agent(ABC):
     """
     def __init__(
         self,
-        x_pos: float,
-        y_pos: float,
-        body_size: float,
-        sense_radius: float,
+        x_pos: int,
+        y_pos: int,
+        body_size: int,
+        sense_radius: int,
         body_temp: float,
         body_temp_low_threshold: float,
         body_temp_high_threshold: float,
@@ -44,7 +45,7 @@ class Agent(ABC):
         self._alive = True
 
     @abstractmethod
-    def get_move(self, neighbors: list[Agent]) -> tuple(float):
+    def get_move(self, neighbors: list[Agent]) -> tuple(int):
         """Calculate the current move given the neighbors.
 
         Parameters
@@ -53,20 +54,28 @@ class Agent(ABC):
             List of neighbors within sense_radius
 
         Returns
-        tuple(float)
+        tuple(int)
             Agent's move in the form (direction, velocity)
         """
         ...
 
     @property
-    def body_size(self) -> float:
-        """float: Radius of the agent body."""
+    def body_size(self) -> int:
+        """int: Radius of the agent body."""
         return self._body_size
 
+    @body_size.setter
+    def body_size(self, body_size: int):
+        self._body_size = abs(int(body_size))
+
     @property
-    def sense_radius(self) -> float:
-        """float: Radius of the agent sensing other agents."""
+    def sense_radius(self) -> int:
+        """int: Radius of the agent sensing other agents."""
         return self._sense_radius
+
+    @sense_radius.setter
+    def sense_radius(self, sense_radius: float):
+        self._sense_radius = abs(int(sense_radius))
 
     @property
     def alive(self) -> bool:
@@ -98,11 +107,11 @@ class Agent(ABC):
             self.alive = False
 
     @property
-    def position(self) -> tuple(float):
-        """tuple(float): Current coordinates of the agent (x, y)"""
+    def position(self) -> tuple(int):
+        """tuple(int): Current coordinates of the agent (x, y)"""
         return (self._x_pos, self._y_pos)
 
     @position.setter
     def position(self, position: tuple(float)) -> None:
-        self._x_pos = position[0]
-        self._y_pos = position[1]
+        self._x_pos = int(position[0])
+        self._y_pos = int(position[1])
