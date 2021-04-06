@@ -45,7 +45,7 @@ class Agent(ABC):
         self._alive = True
 
     @abstractmethod
-    def get_move(self, neighbors: list[Agent]) -> tuple(int):
+    def get_move(self, neighbors: list[Agent]) -> tuple(float):
         """Calculate the current move given the neighbors.
 
         Parameters
@@ -54,7 +54,7 @@ class Agent(ABC):
             List of neighbors within sense_radius
 
         Returns
-        tuple(int)
+        tuple(float)
             Agent's move in the form (direction, velocity)
         """
         ...
