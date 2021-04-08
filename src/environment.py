@@ -81,15 +81,26 @@ class Environment:
         for epoch in range(epochs):
             LOG.info(f"Begin epoch {epoch}/{epochs}")
             self.run_epoch()
+            self.update_thermal()
         self.save_gif()
         shutil.rmtree(self._gif_img_dir, ignore_errors=True)
+
+    def update_thermal(self) -> None:
+        """Update the thermals of the environment.
+
+        This will include calculating the temperature of every tile,
+        calculating the body temperature of each agent, and anything
+        else included in the thermal model.
+        """
+        # TODO: Implement this
+        LOG.warning("Thermal model not yet implemented. Nothing happens.")
 
     def run_epoch(self):
         """Run one epoch"""
         self._epoch += 1
         random.shuffle(self._agents)
         for agent in self._agents:
-            move = agent.get_move(list())
+            move = agent.get_move(self.get_neighbors(agent))
             old_position = agent.position
             agent.position = move
             if self.check_valid_pos(agent, move[0], move[1]):
@@ -100,7 +111,18 @@ class Environment:
                 agent.position = old_position
         self.draw()
 
-    def check_valid_pos(self, agent, row, col):
+    def get_neighbors(self, test_agent: Agent) -> list[Agent]:
+        """Get a list of neighbors in the sense radius"""
+        neighbors = list()
+        for agent in self._agents:
+            if agent is test_agent:
+                continue
+            dist = self.manhatten_distance(test_agent, agent)
+            if dist < agent.sense_radius:
+                neighbors.append(agent)
+        return neighbors
+
+    def check_valid_pos(self, agent: Agent, row: int, col: int) -> bool:
         """Check if a new position is valid for an agent"""
         # Check bounds of environment
         if (row < agent.body_radius - 1) or (
@@ -113,6 +135,11 @@ class Environment:
             if (curr_agent is not agent) and agent.is_collision(curr_agent):
                 return False
         return True
+
+    def manhatten_distance(self, agent1: Agent, agent2: Agent) -> int:
+        """Calculate manhatten distance between two agents"""
+        return (abs(agent1.position[0] - agent2.position[0]) +
+                abs(agent1.position[1] - agent2.position[1]))
 
     def add_agent(self, agent: Agent) -> bool:
         """Add agent if no collisions"""
@@ -133,7 +160,7 @@ class Environment:
             self.draw_agent(agent)
         fig, axis = plt.subplots()
         axis.imshow(self._env)
-        # axis.axis("off")
+        axis.axis("off")
         axis.set_title(f"{self._name}\n" f"epoch {self._epoch:06d}")
         img_path = self._gif_img_dir.joinpath(f"epoch_{self._epoch:010d}.png")
         fig.savefig(img_path)
