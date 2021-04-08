@@ -29,7 +29,7 @@ PROJ_DIR = SRC_DIR.parent
 CONFIG_SECTIONS = {
     "general": ["name"],
     "paths": ["image_dir"],
-    "env": ["env_size", "grid_size", "time_step_size"],
+    "env": ["env_size", "grid_size", "time_step_size", "epochs"],
     "penguin": [
         "count", "body_radius", "sense_radius", "body_temp",
         "body_temp_low_threshold", "body_temp_high_threshold"
@@ -139,7 +139,8 @@ def main(config_file: str, log_level: int) -> int:
         )
         if env.add_agent(penguin):
             added_penguins += 1
-    env.draw()
+    # env.draw()
+    env.run(int(config["env"]["epochs"]))
     LOG.info("Done.")
     logging.shutdown()
     return 0

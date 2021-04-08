@@ -10,10 +10,12 @@ import logging
 import configparser
 import pathlib
 import random
+import shutil
 # Packages
 import coloredlogs
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 # Custom
 from agent import Agent
 from penguin import Penguin
@@ -56,12 +58,14 @@ class Environment:
         self._thermal_env = np.empty(shape=self._env_size, dtype=float)
         self._agents = list()
         self._time = 0
+        self._epoch = 0
         # Initialize image directories
         self._image_dir = PROJ_DIR.joinpath(config["paths"]["image_dir"])
         self._image_dir.mkdir(mode=0o775, exist_ok=True)
         self._image_dir = self._image_dir.joinpath(self._name)
         self._image_dir.mkdir(mode=0o775, exist_ok=True)
         self._gif_img_dir = self._image_dir.joinpath("gif_imgs")
+        shutil.rmtree(self._gif_img_dir, ignore_errors=True)
         self._gif_img_dir.mkdir(mode=0o775, exist_ok=True)
         LOG.debug(f"Initialized Environment: {self._name}")
 
@@ -75,21 +79,26 @@ class Environment:
         # Draw initial board
         self.draw()
         for epoch in range(epochs):
-            LOG.debug(f"Begin epoch {epoch}")
+            LOG.info(f"Begin epoch {epoch}/{epochs}")
             self.run_epoch()
+        self.save_gif()
+        shutil.rmtree(self._gif_img_dir, ignore_errors=True)
 
     def run_epoch(self):
         """Run one epoch"""
+        self._epoch += 1
         random.shuffle(self._agents)
         for agent in self._agents:
-            move = agent.get_move
+            move = agent.get_move(list())
+            old_position = agent.position
+            agent.position = move
             if self.check_valid_pos(agent, move[0], move[1]):
-                LOG.debug(f"Moving agent: {agent.position} -> {move}")
-                agent.position = move
                 self._time += 1
-                self.draw()
+                LOG.debug(f"Moving agent: {agent.position} -> {move}")
             else:
                 LOG.debug(f"Move invalid: {agent.position} -> {move}")
+                agent.position = old_position
+        self.draw()
 
     def check_valid_pos(self, agent, row, col):
         """Check if a new position is valid for an agent"""
@@ -109,7 +118,8 @@ class Environment:
         """Add agent if no collisions"""
         if self.check_valid_pos(agent, agent.position[0], agent.position[1]):
             self._agents.append(agent)
-            LOG.debug(f"Added agent number {len(self._agents)}")
+            LOG.debug(f"Added agent number {len(self._agents)} at"
+                      f"pos {agent.position}")
             return True
         return False
 
@@ -120,23 +130,41 @@ class Environment:
             dtype=float,
         )
         for agent in self._agents:
-            color = (random.random(), random.random(), random.random())
-            self.draw_agent(agent, color)
+            self.draw_agent(agent)
         fig, axis = plt.subplots()
         axis.imshow(self._env)
-        axis.axis("off")
-        axis.set_title(f"{self._name}\n" f"step {self._time:06d}")
-        img_path = self._gif_img_dir.joinpath(f"step_{self._time:010d}.png")
+        # axis.axis("off")
+        axis.set_title(f"{self._name}\n" f"epoch {self._epoch:06d}")
+        img_path = self._gif_img_dir.joinpath(f"epoch_{self._epoch:010d}.png")
         fig.savefig(img_path)
         fig.clf()
         plt.close()
 
-    def draw_agent(self, agent, color):
+    def draw_agent(self, agent):
         """Draw an agent in the environment"""
         pos = agent.position
         for i in range(agent.body_radius):
             for j in range(agent.body_radius - i):
-                self._env[pos[0] + i, pos[1] + j] = color
-                self._env[pos[0] + i, pos[1] - j] = color
-                self._env[pos[0] - i, pos[1] + j] = color
-                self._env[pos[0] - i, pos[1] - j] = color
+                self._env[pos[0] + i, pos[1] + j] = agent.color
+                self._env[pos[0] + i, pos[1] - j] = agent.color
+                self._env[pos[0] - i, pos[1] + j] = agent.color
+                self._env[pos[0] - i, pos[1] - j] = agent.color
+
+    def save_gif(self) -> None:
+        """Save the GIF"""
+        LOG.info("Generating GIF...")
+        images = []
+        for path in sorted(list(self._gif_img_dir.iterdir())):
+            LOG.debug(f"Adding {path}")
+            image = Image.open(path)
+            images.append(image.copy())
+            image.close()
+        gif_path = self._image_dir.joinpath(f"{self._name}.gif")
+        images[0].save(
+            gif_path,
+            save_all=True,
+            duration=25,
+            append_images=images[1:],
+            loop=0,
+        )
+        LOG.info(f"A GIF of the simulation has been saved in:\n{gif_path}")

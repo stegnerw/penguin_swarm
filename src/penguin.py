@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """This module implements the Penguin agent.
 """
+# Standard library
 from __future__ import annotations
+# Packages
+import numpy as np
+# Custom
 from agent import Agent
 
 
 class Penguin(Agent):
     """Penguin agent class."""
-    def get_move(self, neighbors: list[Agent]) -> tuple(int):
+    def get_move(self, neighbors: list[Agent]) -> np.ndarray[int]:
         """Calculate the current move given the neighbors.
 
         Parameters
@@ -19,4 +23,4 @@ class Penguin(Agent):
         tuple(int)
             Agent's move in the form (row, column)
         """
-        return (self._row, self._col)
+        return self.position + np.random.randint(-3, 4, size=2, dtype=int)

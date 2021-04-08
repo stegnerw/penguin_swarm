@@ -4,7 +4,9 @@
 """
 # Standard library
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
+# Packages
+import numpy as np
 
 
 class Agent(ABC):
@@ -44,18 +46,19 @@ class Agent(ABC):
         self._body_temp_low_threshold = body_temp_low_threshold
         self._body_temp_high_threshold = body_temp_high_threshold
         self._alive = True
+        self._color = None
 
     @abstractmethod
-    def get_move(self, neighbors: list[Agent]) -> tuple(int):
+    def get_move(self, neighbors: list[Agent]) -> np.ndarray[int]:
         """Calculate the current move given the neighbors.
 
         Parameters
         ----------
-        neighbors : list
+        neighbors : list[Agent]
             List of neighbors within sense_radius
 
         Returns
-        tuple(int)
+        np.ndarray[int]
             Agent's move in the form (row, column)
         """
         ...
@@ -108,12 +111,12 @@ class Agent(ABC):
             self.alive = False
 
     @property
-    def position(self) -> tuple(int):
-        """tuple(int): Current coordinates of the agent (x, y)"""
-        return (self._row, self._col)
+    def position(self) -> np.ndarray[int]:
+        """np.ndarray[int]: Current coordinates of the agent (x, y)"""
+        return np.array((self._row, self._col), dtype=int)
 
     @position.setter
-    def position(self, position: tuple(int)) -> None:
+    def position(self, position: np.ndarray[int]) -> None:
         self._row = int(position[0])
         self._col = int(position[1])
 
@@ -125,3 +128,10 @@ class Agent(ABC):
         diff = sum(diffs)
         min_diff = self.body_radius + agent.body_radius - 1
         return diff < min_diff
+
+    @property
+    def color(self) -> np.ndarray[float]:
+        """np.ndarray[float] : Color to display the agent"""
+        if self._color is None:
+            self._color = np.random.random_sample(size=3)
+        return self._color
