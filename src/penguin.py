@@ -7,7 +7,7 @@ from agent import Agent
 
 class Penguin(Agent):
     """Penguin agent class."""
-    def get_move(self, neighbors: list[Agent]) -> tuple(float):
+    def get_move(self, neighbors: list[Agent]) -> tuple(int):
         """Calculate the current move given the neighbors.
 
         Parameters
@@ -16,7 +16,7 @@ class Penguin(Agent):
             List of neighbors within sense_radius
 
         Returns
-        tuple(float)
-            Agent's move in the form (direction, velocity)
+        tuple(int)
+            Agent's move in the form (row, column)
         """
-        return (0.0, 0.0)
+        return (self._row, self._col)
