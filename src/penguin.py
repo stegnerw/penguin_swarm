@@ -11,7 +11,8 @@ from agent import Agent
 
 class Penguin(Agent):
     """Penguin agent class."""
-    def get_move(self, neighbors: list[Agent]) -> np.ndarray[int]:
+    def get_move(self, neighbors: list[Agent],
+                 thermal_points: dict[str, float]) -> np.ndarray[int]:
         """Calculate the current move given the neighbors.
 
         Parameters

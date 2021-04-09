@@ -37,7 +37,10 @@ CONFIG_SECTIONS = {
     ],
     "penguin": [
         "count", "body_radius", "sense_radius", "body_temp",
-        "body_temp_low_threshold", "body_temp_high_threshold"
+        "low_death_threshold", "high_death_threshold", "low_move_threshold",
+        "high_move_threshold", "internal_conductivity",
+        "external_conductivity", "insulation_thickness", "density",
+        "movement_speed", "metabolism"
     ],
 }
 
@@ -113,7 +116,7 @@ def parse_config(config_file: str) -> configparser.ConfigParser:
 
 def main(config_file: str, log_level: int) -> int:
     """Main function
-6
+
     Parameters
     ----------
     TODO
@@ -143,20 +146,25 @@ def main(config_file: str, log_level: int) -> int:
     added_penguins = 0
     while added_penguins < int(config["penguin"]["count"]):
         penguin = Penguin(
-            row=random.randrange(env_size[0]),
-            col=random.randrange(env_size[1]),
-            body_radius=int(config["penguin"]["body_radius"]),
-            sense_radius=int(config["penguin"]["sense_radius"]),
-            body_temp=float(config["penguin"]["body_temp"]),
-            body_temp_low_threshold=float(
-                config["penguin"]["body_temp_low_threshold"]),
-            body_temp_high_threshold=float(
-                config["penguin"]["body_temp_high_threshold"]),
+            random.randrange(env_size[0]),
+            random.randrange(env_size[1]),
+            int(config["penguin"]["body_radius"]),
+            int(config["penguin"]["sense_radius"]),
+            float(config["penguin"]["body_temp"]),
+            float(config["penguin"]["low_death_threshold"]),
+            float(config["penguin"]["high_death_threshold"]),
+            float(config["penguin"]["low_move_threshold"]),
+            float(config["penguin"]["high_move_threshold"]),
+            float(config["penguin"]["internal_conductivity"]),
+            float(config["penguin"]["external_conductivity"]),
+            float(config["penguin"]["insulation_thickness"]),
+            float(config["penguin"]["density"]),
+            int(config["penguin"]["movement_speed"]),
+            float(config["penguin"]["metabolism"]),
         )
         if env.add_agent(penguin):
             added_penguins += 1
-    # env.draw()
-    env.run(int(config["env"]["epochs"]))
+    env.run()
     LOG.info("Done.")
     logging.shutdown()
     return 0

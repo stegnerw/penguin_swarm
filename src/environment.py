@@ -59,6 +59,9 @@ class Environment:
         self._env_size = env_size
         self._agents = list()
         self._epoch = 0
+        self._grid_size = grid_size
+        self._time_step_size = time_step_size
+        self._epochs = epochs
         # Drawing environment
         self._drawing_env = np.ones(
             shape=(self.env_size[0], self.env_size[1], 3),
@@ -87,12 +90,14 @@ class Environment:
         """int: The size of the environment in the form (rows, cols) tiles"""
         return self._env_size
 
-    def run(self, epochs: int) -> None:
+    def run(self) -> None:
         """Run for a set number of epochs"""
+        # TODO: Initialize the thermal environment, probably around here.
+        # Do that initialization in a separate function.
         # Draw initial board
         self.draw()
-        for epoch in range(epochs):
-            LOG.info(f"Begin epoch {epoch}/{epochs}")
+        for epoch in range(self._epochs):
+            LOG.info(f"Begin epoch {epoch + 1}/{self._epochs}")
             self.run_epoch()
             self.update_thermal()
         self.save_gif()
@@ -113,7 +118,16 @@ class Environment:
         self._epoch += 1
         random.shuffle(self._agents)
         for agent in self._agents:
-            move = agent.get_move(self.get_neighbors(agent))
+            neighbors = self.get_neighbors(agent)
+            pos = agent.position
+            size = agent.body_radius - 1
+            thermal_points = {
+                "up": self._thermal_map[pos[0] - size, pos[1]],
+                "down": self._thermal_map[pos[0] + size, pos[1]],
+                "left": self._thermal_map[pos[0], pos[1] - size],
+                "right": self._thermal_map[pos[0], pos[1] + size],
+            }
+            move = agent.get_move(neighbors, thermal_points)
             old_position = agent.position
             agent.position = move
             if self.check_valid_pos(agent, move[0], move[1]):

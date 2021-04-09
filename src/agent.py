@@ -35,21 +35,38 @@ class Agent(ABC):
         body_radius: int,
         sense_radius: int,
         body_temp: float,
-        body_temp_low_threshold: float,
-        body_temp_high_threshold: float,
+        low_death_threshold: float,
+        high_death_threshold: float,
+        low_move_threshold: float,
+        high_move_threshold: float,
+        internal_conductivity: float,
+        external_conductivity: float,
+        insulation_thickness: float,
+        density: float,
+        movement_speed: int,
+        metabolism: float,
     ):
         self._row = row
         self._col = col
         self._body_radius = body_radius
         self._sense_radius = sense_radius
         self._body_temp = body_temp
-        self._body_temp_low_threshold = body_temp_low_threshold
-        self._body_temp_high_threshold = body_temp_high_threshold
+        self._low_death_threshold = low_death_threshold
+        self._high_death_threshold = high_death_threshold
+        self._low_move_threshold = low_move_threshold
+        self._high_move_threshold = high_move_threshold
+        self._internal_conductivity = internal_conductivity
+        self._external_conductivity = external_conductivity
+        self._insulation_thickness = insulation_thickness
+        self._density = density
+        self._movement_speed = movement_speed
+        self._metabolism = metabolism
         self._alive = True
         self._color = None
 
     @abstractmethod
-    def get_move(self, neighbors: list[Agent]) -> np.ndarray[int]:
+    def get_move(self, neighbors: list[Agent],
+                 thermal_points: dict[str, float]) -> np.ndarray[int]:
         """Calculate the current move given the neighbors.
 
         Parameters
@@ -106,8 +123,8 @@ class Agent(ABC):
     @body_temp.setter
     def body_temp(self, body_temp: float) -> None:
         self._body_temp = body_temp
-        if (self._body_temp > self._body_temp_high_threshold
-                or self._body_temp < self._body_temp_low_threshold):
+        if (self._body_temp > self._high_death_threshold
+                or self._body_temp < self._low_death_threshold):
             self.alive = False
 
     @property
