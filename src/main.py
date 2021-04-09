@@ -26,10 +26,15 @@ SRC_DIR = pathlib.Path(__file__).parent.resolve()
 PROJ_DIR = SRC_DIR.parent
 
 # Outline the required sections and options of the INI config files
+# TODO: Make each section hold a dictionary where the value is a function to
+# parse the input properly.
 CONFIG_SECTIONS = {
     "general": ["name"],
     "paths": ["image_dir"],
-    "env": ["env_size", "grid_size", "time_step_size", "epochs"],
+    "env": [
+        "env_size", "grid_size", "time_step_size", "epochs",
+        "air_conductivity", "initial_temp", "ambient_temp"
+    ],
     "penguin": [
         "count", "body_radius", "sense_radius", "body_temp",
         "body_temp_low_threshold", "body_temp_high_threshold"
@@ -122,9 +127,20 @@ def main(config_file: str, log_level: int) -> int:
     if config is None:
         LOG.error("Could not read config file")
         return 1
-    env = Environment(log_level, config)
-    added_penguins = 0
     env_size = tuple(map(int, config["env"]["env_size"].split(", ")))
+    env = Environment(
+        log_level,
+        config["general"]["name"],
+        config["paths"]["image_dir"],
+        env_size,
+        float(config["env"]["grid_size"]),
+        float(config["env"]["time_step_size"]),
+        int(config["env"]["epochs"]),
+        float(config["env"]["air_conductivity"]),
+        float(config["env"]["initial_temp"]),
+        float(config["env"]["ambient_temp"]),
+    )
+    added_penguins = 0
     while added_penguins < int(config["penguin"]["count"]):
         penguin = Penguin(
             row=random.randrange(env_size[0]),
