@@ -10,12 +10,14 @@ import logging
 import configparser
 import pathlib
 import random
+import re
 import shutil
 # Packages
 import coloredlogs
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
+import cv2
 # Custom
 from agent import Agent
 from penguin import Penguin
@@ -56,17 +58,24 @@ class Environment:
             milliseconds=True,
         )
         self._name = name
+        self._file_name = self._name.lower()
+
+        # Filenames should be only lowercase, numbers, hyphens, and underscores
+        self._file_name = re.sub(" ", "_", self._file_name)
+        self._file_name = re.sub("[^a-z0-9_-]", "", self._file_name)
         self._env_size = env_size
         self._agents = list()
         self._epoch = 0
         self._grid_size = grid_size
         self._time_step_size = time_step_size
         self._epochs = epochs
+
         # Drawing environment
         self._drawing_env = np.ones(
             shape=(self.env_size[0], self.env_size[1], 3),
             dtype=float,
         )
+
         # Thermal model related members
         self._thermal_map = np.empty(shape=self._env_size, dtype=float)
         # I intend this to store a string but Sid you may change the dtype
@@ -75,10 +84,11 @@ class Environment:
         self._air_conductivity = air_conductivity
         self._initial_air_temp = initial_air_temp
         self._ambient_air_temp = ambient_air_temp
+
         # Initialize image directories
         self._image_dir = PROJ_DIR.joinpath(image_dir)
         self._image_dir.mkdir(mode=0o775, exist_ok=True)
-        self._image_dir = self._image_dir.joinpath(self._name)
+        self._image_dir = self._image_dir.joinpath(self._file_name)
         self._image_dir.mkdir(mode=0o775, exist_ok=True)
         self._gif_img_dir = self._image_dir.joinpath("gif_imgs")
         shutil.rmtree(self._gif_img_dir, ignore_errors=True)
@@ -212,11 +222,11 @@ class Environment:
             image = Image.open(path)
             images.append(image.copy())
             image.close()
-        gif_path = self._image_dir.joinpath(f"{self._name}.gif")
+        gif_path = self._image_dir.joinpath(f"{self._file_name}.gif")
         images[0].save(
             gif_path,
             save_all=True,
-            duration=25,
+            duration=100,
             append_images=images[1:],
             loop=0,
         )
