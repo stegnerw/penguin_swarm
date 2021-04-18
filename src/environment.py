@@ -17,7 +17,6 @@ import coloredlogs
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-import cv2
 # Custom
 from agent import Agent
 from penguin import Penguin
@@ -126,7 +125,6 @@ class Environment:
         calculating the body temperature of each agent, and anything
         else included in the thermal model.
         """
-        
         prev_material_map=self._material_map
         
         """Update Maps"""

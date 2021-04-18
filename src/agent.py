@@ -7,6 +7,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod, abstractproperty
 # Packages
 import numpy as np
+import operator
 
 
 class Agent(ABC):
@@ -79,7 +80,44 @@ class Agent(ABC):
         np.ndarray[int]
             Agent's move in the form (row, column)
         """
-        ...
+
+        # Sum all neighbor positions, use it as moving to/away position
+        target_pos = np.array([0, 0])
+        for n in neighbors:
+            target_pos += np.array(n.position())
+        if self._body_temp < self.low_move_threshold:
+            target_pos = target_pos
+        elif self._body_temp > self.high_move_threshold:
+            target_pos = -1*target_pos
+        else:
+            return np.array(self.position)
+
+        # Calculate the optimal final position closest to target
+        best_pos = np.array(self.position)
+        for step in self._movement_speed:
+            distances = {
+                "stay": abs(best_pos[0] + 0 - target_pos[0] +
+                            best_pos[1] + 0 - target_pos[1]),
+                "up": abs(best_pos[0] + 0 - target_pos[0] +
+                          best_pos[1] + 1 - target_pos[1]),
+                "down": abs(best_pos[0] + 0 - target_pos[0] +
+                            best_pos[1] - 1 - target_pos[1]),
+                "left": abs(best_pos[0] - 1 - target_pos[0] +
+                            best_pos[1] + 0 - target_pos[1]),
+                "right": abs(best_pos[0] + 1 - target_pos[0] +
+                             best_pos[1] + 0 - target_pos[1])
+                }
+            direction = min(distances.items(), key=operator.itemgetter(1))[0]
+            if direction == "up":
+                best_pos[1] += 1
+            elif direction == "down":
+                best_pos[1] += -1
+            elif direction == "left":
+                best_pos[0] += -1
+            elif direction == "right":
+                best_pos[0] += 1
+
+        return best_pos
 
     @property
     def body_radius(self) -> int:
