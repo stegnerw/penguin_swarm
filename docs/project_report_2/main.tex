@@ -1,0 +1,227 @@
+\documentclass[handout,9pt]{beamer}
+
+% Choose how your presentation looks.
+%
+% For more themes, color themes and font themes, see:
+% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
+%
+\mode<presentation>
+{
+	\usetheme{Darmstadt}      % or try Darmstadt, Madrid, Warsaw, ...
+	\usecolortheme{beaver} % or try albatross, beaver, crane, ...
+	\usefonttheme{serif}  % or try serif, structurebold, ...
+	\setbeamertemplate{navigation symbols}{}
+	\setbeamertemplate{caption}[numbered]
+}
+
+% *** Formatting Packaages ***
+\usepackage{bookmark}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,
+	urlcolor=cyan,
+}
+
+% *** Citation Packages ***
+\usepackage[
+	citecounter,
+	labelnumber,
+	backend=biber,
+	bibencoding=utf8,
+	sorting=none
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+% *** Code Blocks Packages ***
+\usepackage{listings}
+\usepackage{xcolor}
+%New colors defined below
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{1.0,1.0,1.0}
+\lstset{
+	frame=tb,
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\tiny,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbersep=5pt,
+	numbers=left,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2
+}
+% *** Diagram Drawing ***
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+% *** File Organization Packages ***
+\usepackage{subfiles}
+% *** FONT PACKAGES ***
+\usepackage[T1]{fontenc}
+% *** MATH PACKAGES ***
+\usepackage{amsmath}
+\interdisplaylinepenalty=2500
+\usepackage{amssymb}
+% *** GRAPHICS PACKAGES ***
+\usepackage [export]{adjustbox} % Frame around figures (via the frame option in includegraphic)
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{media9}
+\usepackage[font=small,skip=0pt]{caption}
+\usepackage{tabularx}
+\usepackage{subcaption}
+
+% *** Table Packages ***
+\usepackage{multirow}
+
+% *** Unsorted Packages ***
+\usepackage[absolute,overlay]{textpos}
+	\setlength{\TPHorizModule}{1mm}
+	\setlength{\TPVertModule}{1mm}
+%\newcolumntype{b}{X}
+\newcolumntype{s}{>{\hsize=.5\hsize}X}
+
+% Title Page Info %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Emergent Penguin Swarm Behaviors}
+\subtitle{
+    Final Project for EECE7065 Complex Systems
+}
+\author{
+	\texorpdfstring{
+		Presented by: \\
+		Wayne Stegner \and Zuguang Liu \and Sid Barve
+	}{Wayne Stegner, Zuguang Liu, and Sid Barve}
+}
+
+\date{\today}
+\logo{\includegraphics[height=1.0cm]{images/uc_logo.png}}
+
+% Start of Document
+\begin{document}
+	\section{Introduction}
+	\begin{frame}
+		\centering
+		\titlepage
+	\end{frame}
+
+	\section{Sid's Update}
+	\begin{frame}{Heat Exchange Model}
+		Goal: Develop preliminary penguin agents and rules for movement.
+		Implement heat exchange interactions among penguins and between penguins
+		and the environment.
+		\begin{itemize}
+			\item Metabolic Heat Generation
+				\begin{itemize}
+					\item $Q_{meta}=mc\Delta t_{meta}$
+				\end{itemize}
+			\item Penguin-Penguin Heat Exchange
+				\begin{itemize}
+					\item $Q_{21}=\frac{\kappa_{1}\kappa_{2}A_{1}A_{2}(t_{2}-t_{1})}{d^{2}}$
+				\end{itemize}
+			\item Penguin-Environment Heat Exchange (Newton's Law of Cooling)
+				\begin{itemize}
+					\item $Q_{env}=\kappa A (t_{amb}-t)$
+				\end{itemize}
+			\item Temperature Change and Movement
+				\begin{itemize}
+					\item $\Delta t_{1}=\frac{\sum_{i=1}^{N} Q_{i1}+Q_{meta,1}+Q_{env,1}}{m_{1}c_{1}}$
+					\item If temp < lower bound, then move toward average location of
+						penguins in neighborhood. If temp > upper bound, then move away
+						from average location.
+				\end{itemize}
+		\end{itemize}
+	\end{frame}
+
+	\section{Liu's Update}
+	\begin{frame}{Temperature Sensing Only Simulation}
+		Goal: A simple test simulation on if temperature solely determines the
+		emergent swarming behavior
+		\begin{itemize}
+			\item Heat transfer: penguins radiate heat into the environment with a
+				linearly decaying temperature pattern
+			\item Moving: if hot, go to cold area; if cold, go to hot area
+			\item Penguins are ``blind'': they only sense temperature around them and
+				decide on their movement
+		\end{itemize}
+		Conclusion: ``blind'' penguins will emergently swarm only with a strict
+		range of hyper-parameters
+	\end{frame}
+
+	\section{Wayne's Update}
+	\begin{frame}{Simulation Environment}
+		\par Goal: create a framework to facilitate testing different movement
+		strategies and model parameters \\
+		\begin{itemize}
+			\item Framework to manage overall flow of the simulation
+				\begin{itemize}
+					\item Read parameters from a config file (allows batch processing)
+					\item Allow for different agent types modularly
+				\end{itemize}
+			\item In each epoch:
+				\begin{itemize}
+					\item Get movement decisions from each agent one at a time
+					\item Ignore any moves which cause collisions
+					\item Apply thermal model and update agents temperatures
+					\item Log metrics and save an image
+				\end{itemize}
+			\item At the end of each simulation:
+				\begin{itemize}
+					\item Save a GIF of the simulation
+					\item Display metrics such as survival and average temperature
+				\end{itemize}
+		\end{itemize}
+	\end{frame}
+
+\section{Future Work}
+\begin{frame}{Future Work}
+	Goal: Integrate thermal model and penguin controls in discretized environment.
+	\begin{itemize}
+		\item Implement thermal model in new discretized environment with cell-cell
+			interaction.
+			\begin{itemize}
+				\item Each cell will have a heat transfer interaction with adjacent
+					cells
+				\item Penguin cores will generate heat using metabolic heat generation
+				\item Different thermal conductivity for penguin interior, penguin
+					exterior, and environment
+				\item Ambient air or environmental heat sink will remain
+			\end{itemize}
+		\item Analyze the effects of hyper-parameters and agent controls.
+	\end{itemize}
+\end{frame}
+\begin{frame}{Behavior Evolution}
+	\par Goal: Explore evolution for generating rule policies for agents
+	\vspace{12pt}
+	\par Two possible approaches:
+	\begin{itemize}
+		\item Use evolution to explore parameters in our current model, keeping our
+			rules the same
+			\begin{itemize}
+				\item Easy with our current infrastructure
+				\item Decision models will be all the same
+			\end{itemize}
+		\item Use evolution to create the rules and parameters
+			\begin{itemize}
+				\item Use neural nodes with various functions like Sims
+					\cite{simsEvolvingVirtualCreatures1994}
+				\item Ability to generate interesting and novel decision models
+				\item May be difficult to implement --- requires more infrastructure
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+	\begin{frame}[allowframebreaks]
+		\frametitle{References}
+		\printbibliography
+	\end{frame}
+\end{document}
