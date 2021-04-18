@@ -17,7 +17,6 @@ import coloredlogs
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-import cv2
 # Custom
 from agent import Agent
 from penguin import Penguin
@@ -121,7 +120,9 @@ class Environment:
         else included in the thermal model.
         """
         # TODO: Implement this
-        LOG.warning("Thermal model not yet implemented. Nothing happens.")
+        for agent in self._agents:
+            agent.body_temp -= 0.5
+        LOG.warning("Thermal model not yet completed. Check TODO.")
 
     def run_epoch(self):
         """Run one epoch"""
