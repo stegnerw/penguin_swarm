@@ -51,7 +51,7 @@ class Agent(ABC):
         self._col = col
         self._body_radius = body_radius
         self._sense_radius = sense_radius
-        self._body_temp = body_temp
+        self._body_temp = np.full(shape=(2*body_radius-1,2*body_radius-1), fill_value=body_temp, dtype=float)
         self._low_death_threshold = low_death_threshold
         self._high_death_threshold = high_death_threshold
         self._low_move_threshold = low_move_threshold
@@ -64,6 +64,7 @@ class Agent(ABC):
         self._metabolism = metabolism
         self._alive = True
         self._color = None
+        
 
     @abstractmethod
     def get_move(self, neighbors: list[Agent],
@@ -150,7 +151,7 @@ class Agent(ABC):
         self.alive = False
 
     @property
-    def body_temp(self) -> float:
+    def body_temp(self) -> np.ndarray[float]:
         """float: Internal body temperature of the agent.
 
         The setter checks the temperature thresholds and the agent dies if the
@@ -159,10 +160,10 @@ class Agent(ABC):
         return self._body_temp
 
     @body_temp.setter
-    def body_temp(self, body_temp: float) -> None:
+    def body_temp(self, body_temp: np.ndarray[float]) -> None:
         self._body_temp = body_temp
-        if (self._body_temp > self._high_death_threshold
-                or self._body_temp < self._low_death_threshold):
+        if (self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_death_threshold
+                or self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_death_threshold):
             self.alive = False
 
     @property
