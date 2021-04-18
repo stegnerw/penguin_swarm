@@ -170,8 +170,11 @@ class Environment:
                         agent_id[pos[0] - i, pos[1] + j] = n
                         agent_id[pos[0] - i, pos[1] - j] = n
         
-        """Fill Air Gaps"""            
-        self._thermal_map[self._material_map!=prev_material_map]=self.ambient_air_temp
+        """Fill Air Gaps"""
+        for i in range(self._env_size[0]):
+            for j in range(self._env_size[1]):
+                if(self._material_map[i][j]==0 and prev_material_map>0):
+                    self._thermal_map[i][j]=self.ambient_air_temp
         
         """Compute Heat Exchange Map"""
         heat_exchange=np.zeros(shape=self._env_size, dtype=float)
