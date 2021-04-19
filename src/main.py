@@ -15,9 +15,9 @@ import coloredlogs
 from environment import Environment
 from penguin import Penguin
 
-################################################################################
+###############################################################################
 # Constant definitions
-################################################################################
+###############################################################################
 
 LOG = logging.getLogger("penguin_swarm.main")
 
@@ -44,9 +44,9 @@ CONFIG_SECTIONS = {
     ],
 }
 
-################################################################################
+###############################################################################
 # Function definitions
-################################################################################
+###############################################################################
 
 
 def parse_args(arg_list: list[str] = None):
@@ -109,9 +109,9 @@ def parse_config(config_file: str) -> configparser.ConfigParser:
     return config
 
 
-################################################################################
+###############################################################################
 # Main function
-################################################################################
+###############################################################################
 
 
 def main(config_file: str, log_level: int) -> int:
@@ -159,6 +159,7 @@ def main(config_file: str, log_level: int) -> int:
             float(config["penguin"]["external_conductivity"]),
             float(config["penguin"]["insulation_thickness"]),
             float(config["penguin"]["density"]),
+            config["penguin"]["movement_policy"],
             int(config["penguin"]["movement_speed"]),
             float(config["penguin"]["metabolism"]),
         )

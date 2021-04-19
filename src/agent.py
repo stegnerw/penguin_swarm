@@ -7,7 +7,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod, abstractproperty
 # Packages
 import numpy as np
-import operator
+import colorsys
 
 
 class Agent(ABC):
@@ -29,6 +29,7 @@ class Agent(ABC):
     This is preliminary. It can change based on future needs, as long as
     dependencies are also changed.
     """
+
     def __init__(
         self,
         row: int,
@@ -44,6 +45,7 @@ class Agent(ABC):
         external_conductivity: float,
         insulation_thickness: float,
         density: float,
+        movement_policy: str,
         movement_speed: int,
         metabolism: float,
     ):
@@ -51,7 +53,8 @@ class Agent(ABC):
         self._col = col
         self._body_radius = body_radius
         self._sense_radius = sense_radius
-        self._body_temp = np.full(shape=(2*body_radius-1,2*body_radius-1), fill_value=body_temp, dtype=float)
+        self._body_temp = np.full(shape=(2*body_radius-1, 2*body_radius-1),
+                                  fill_value=body_temp, dtype=float)
         self._low_death_threshold = low_death_threshold
         self._high_death_threshold = high_death_threshold
         self._low_move_threshold = low_move_threshold
@@ -64,7 +67,7 @@ class Agent(ABC):
         self._metabolism = metabolism
         self._alive = True
         self._color = None
-        
+        self._movement_policy = movement_policy
 
     @abstractmethod
     def get_move(self, neighbors: list[Agent],
@@ -75,19 +78,34 @@ class Agent(ABC):
         ----------
         neighbors : list[Agent]
             List of neighbors within sense_radius
+        thermal_points : dict of {str: np.ndarray}
+            Dictionary of thermal profile in four directions
 
         Returns
         np.ndarray[int]
             Agent's move in the form (row, column)
         """
 
-        # Sum all neighbor positions, use it as moving to/away position
-        target_pos = np.array([0, 0])
-        for n in neighbors:
-            target_pos += np.array(n.position())
-        if self._body_temp < self.low_move_threshold:
+        # Nothing to target when there is no neighors sensed
+        if neighbors is empty:
+            return np.array(self.position)
+
+        # Collect relative position of neighbors
+        neighbors_rpos = np.stack([n.position - self.position
+                                  for n in neighbors])
+        if self._movement_policy == "average":
+            target_pos = np.sum(neighbors_rpos, axis=0) + self._position
+            # Average policy takes means of all agent positions, set as target
+        elif self._movement_policy == "closest":
+            best_neighbor_i = np.argmin(
+                np.abs(neighbors_rpos).sum(axis=1))
+            target_pos = neighbors_rpos[best_neighbor_i] + self.position
+            # Closest policy target the closest agent
+
+        # Decide to move toward/away from target, or stay in place
+        if self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_move_threshold:
             target_pos = target_pos
-        elif self._body_temp > self.high_move_threshold:
+        elif self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_move_threshold:
             target_pos = -1*target_pos
         else:
             return np.array(self.position)
@@ -95,26 +113,26 @@ class Agent(ABC):
         # Calculate the optimal final position closest to target
         best_pos = np.array(self.position)
         for step in self._movement_speed:
-            distances = {
-                "stay": abs(best_pos[0] + 0 - target_pos[0] +
-                            best_pos[1] + 0 - target_pos[1]),
-                "up": abs(best_pos[0] + 0 - target_pos[0] +
-                          best_pos[1] + 1 - target_pos[1]),
-                "down": abs(best_pos[0] + 0 - target_pos[0] +
-                            best_pos[1] - 1 - target_pos[1]),
-                "left": abs(best_pos[0] - 1 - target_pos[0] +
-                            best_pos[1] + 0 - target_pos[1]),
-                "right": abs(best_pos[0] + 1 - target_pos[0] +
-                             best_pos[1] + 0 - target_pos[1])
-                }
-            direction = min(distances.items(), key=operator.itemgetter(1))[0]
-            if direction == "up":
+            distances = [
+                abs(best_pos[0] + 0 - target_pos[0] +
+                    best_pos[1] + 0 - target_pos[1]),  # stay
+                abs(best_pos[0] + 0 - target_pos[0] +
+                    best_pos[1] + 1 - target_pos[1]),  # up
+                abs(best_pos[0] + 0 - target_pos[0] +
+                    best_pos[1] - 1 - target_pos[1]),  # down
+                abs(best_pos[0] - 1 - target_pos[0] +
+                    best_pos[1] + 0 - target_pos[1]),  # left
+                abs(best_pos[0] + 1 - target_pos[0] +
+                    best_pos[1] + 0 - target_pos[1])   # right
+            ]
+            direction = np.argmin(distances)
+            if direction == 1:
                 best_pos[1] += 1
-            elif direction == "down":
+            elif direction == 2:
                 best_pos[1] += -1
-            elif direction == "left":
+            elif direction == 3:
                 best_pos[0] += -1
-            elif direction == "right":
+            elif direction == 4:
                 best_pos[0] += 1
 
         return best_pos
@@ -149,6 +167,7 @@ class Agent(ABC):
     def kill(self) -> None:
         """Kill the current agent."""
         self.alive = False
+        self._color = np.ones(3)
 
     @property
     def body_temp(self) -> np.ndarray[float]:
@@ -162,9 +181,15 @@ class Agent(ABC):
     @body_temp.setter
     def body_temp(self, body_temp: np.ndarray[float]) -> None:
         self._body_temp = body_temp
+        self._color = np.array(colorsys.hsv_to_rgb(
+            0.5 +
+            (self._body_temp[self._body_radius-1][self._body_radius-1]
+             - self._low_death_threshold) /
+            (self._high_death_threshold - self._low_death_threshold) * 0.5,
+            1.0, 1.0))
         if (self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_death_threshold
                 or self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_death_threshold):
-            self.alive = False
+            self.kill()
 
     @property
     def position(self) -> np.ndarray[int]:
@@ -189,5 +214,10 @@ class Agent(ABC):
     def color(self) -> np.ndarray[float]:
         """np.ndarray[float] : Color to display the agent"""
         if self._color is None:
-            self._color = np.random.random_sample(size=3)
+            self._color = np.array(colorsys.hsv_to_rgb(
+                0.5 + (self._body_temp[self._body_radius-1][self._body_radius-1]
+                - self._low_death_threshold) /
+                (self._high_death_threshold - self._low_death_threshold)*0.5,
+                1.0, 1.0
+            ))
         return self._color
