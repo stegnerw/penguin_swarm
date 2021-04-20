@@ -66,3 +66,4 @@ dependencies:
   - yapf=0.31.0=pyhd3eb1b0_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.5=h9ceee32_0
+  - coloredlogs=15.0=py39h06a4308_0
