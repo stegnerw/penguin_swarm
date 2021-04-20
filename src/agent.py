@@ -167,7 +167,6 @@ class Agent(ABC):
     def kill(self) -> None:
         """Kill the current agent."""
         self.alive = False
-        self._color = np.ones(3)
 
     @property
     def body_temp(self) -> np.ndarray[float]:
@@ -181,12 +180,6 @@ class Agent(ABC):
     @body_temp.setter
     def body_temp(self, body_temp: np.ndarray[float]) -> None:
         self._body_temp = body_temp
-        self._color = np.array(colorsys.hsv_to_rgb(
-            0.5 +
-            (self._body_temp[self._body_radius-1][self._body_radius-1]
-             - self._low_death_threshold) /
-            (self._high_death_threshold - self._low_death_threshold) * 0.5,
-            1.0, 1.0))
         if (self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_death_threshold
                 or self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_death_threshold):
             self.kill()
@@ -213,11 +206,11 @@ class Agent(ABC):
     @property
     def color(self) -> np.ndarray[float]:
         """np.ndarray[float] : Color to display the agent"""
-        if self._color is None:
-            self._color = np.array(colorsys.hsv_to_rgb(
-                0.5 + (self._body_temp[self._body_radius-1][self._body_radius-1]
-                - self._low_death_threshold) /
-                (self._high_death_threshold - self._low_death_threshold)*0.5,
-                1.0, 1.0
-            ))
+        self._color = np.array(colorsys.hsv_to_rgb(
+            0.5 - 0.5 *
+            (self._body_temp[self._body_radius-1][self._body_radius-1]
+             - self._low_death_threshold) /
+            (self._high_death_threshold - self._low_death_threshold),
+            1.0, 0.5
+        ))
         return self._color

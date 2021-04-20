@@ -12,6 +12,7 @@ import pathlib
 import random
 import re
 import shutil
+import colorsys
 # Packages
 import coloredlogs
 import matplotlib.pyplot as plt
@@ -396,8 +397,10 @@ class Environment:
             shape=(self.env_size[0], self.env_size[1], 3),
             dtype=float,
         )
+        self.draw_map()
         for agent in self._agents:
-            self.draw_agent(agent)
+            if agent.alive:
+                self.draw_agent(agent)
         fig, axis = plt.subplots()
         axis.imshow(self._drawing_env)
         axis.axis("off")
@@ -416,6 +419,15 @@ class Environment:
                 self._drawing_env[pos[0] + i, pos[1] - j] = agent.color
                 self._drawing_env[pos[0] - i, pos[1] + j] = agent.color
                 self._drawing_env[pos[0] - i, pos[1] - j] = agent.color
+
+    def draw_map(self):
+        normalized_temp = (self._thermal_map - self._ambient_air_temp) / \
+            (self._agents[0]._high_death_threshold - self._initial_air_temp)
+        normalized_temp = np.clip(0.5 - 0.5*normalized_temp, 0.0, 0.5)
+        for i in range(self._env_size[0]):
+            for j in range(self.env_size[1]):
+                self._drawing_env[i,j] = np.array(colorsys.hsv_to_rgb(
+                    normalized_temp[i,j], 0.25, 1.0))
 
     def save_gif(self) -> None:
         """Save the GIF"""
