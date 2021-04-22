@@ -87,24 +87,24 @@ class Agent(ABC):
         """
 
         # Nothing to target when there is no neighors sensed
-        if neighbors is empty:
+        if (len(neighbors)==0):
             return np.array(self.position)
 
         # Collect relative position of neighbors
         neighbors_rpos = np.stack([n.position - self.position
                                   for n in neighbors])
         if self._movement_policy == "average":
-            target_pos = np.sum(neighbors_rpos, axis=0) + self._position
+            target_pos = np.sum(neighbors_rpos, axis=0)
             # Average policy takes means of all agent positions, set as target
         elif self._movement_policy == "closest":
             best_neighbor_i = np.argmin(
                 np.abs(neighbors_rpos).sum(axis=1))
-            target_pos = neighbors_rpos[best_neighbor_i] + self.position
+            target_pos = neighbors_rpos[best_neighbor_i]
             # Closest policy target the closest agent
 
         # Decide to move toward/away from target, or stay in place
         if self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_move_threshold:
-            target_pos = target_pos
+            target_pos = target_pos + self.position
         elif self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_move_threshold:
             target_pos = -1*target_pos
         else:

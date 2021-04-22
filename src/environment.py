@@ -140,7 +140,7 @@ class Environment:
         """Update Maps"""
         agent_id = np.full(shape=self._env_size, fill_value=-1, dtype=int)
         heat_capacity = np.full(shape=self._env_size, fill_value=(
-            1.657*pow(self._grid_size, 3)*0.716), dtype=float)
+            1.657*pow(self._grid_size, 2)*1.1*0.716E3), dtype=float)
         self._material_map = np.zeros(shape=self._env_size, dtype=float)
         for n in range(len(self._agents)):
             if(self._agents[n].alive):
@@ -163,13 +163,13 @@ class Environment:
 
                         """Specific Heat Capacity Map"""
                         heat_capacity[pos[0] + i, pos[1] + j] = (
-                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3)
+                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3E3)
                         heat_capacity[pos[0] + i, pos[1] - j] = (
-                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3)
+                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3E3)
                         heat_capacity[pos[0] - i, pos[1] + j] = (
-                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3)
+                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3E3)
                         heat_capacity[pos[0] - i, pos[1] - j] = (
-                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3)
+                            self._agents[n]._density*pow(self._grid_size, 2)*1.1*3E3)
 
                         """Thermal/Temperature Map"""
                         self._thermal_map[pos[0] + i, pos[1] +
@@ -200,8 +200,8 @@ class Environment:
 
                 """Environmental Cooling and Heat Generation"""
                 if(self._material_map[i][j] == 0):
-                    heat_exchange[i][j] -= self._air_conductivity*pow(self._grid_size, 2)/(
-                        self._grid_size/2)*(self._ambient_air_temp-self._thermal_map[i][j])
+                    heat_exchange[i][j] += self._air_conductivity*4*self._grid_size*1.1*(self._ambient_air_temp-self._thermal_map[i][j])
+                    
                 elif(self._material_map[i][j] == 1):
                     heat_exchange[i][j] += self._agents[agent_id[i]
                                                         [j]]._metabolism
@@ -212,103 +212,91 @@ class Environment:
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i][j] > 0):
-                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i-1][j] > 2 or self._material_map[i-1][j] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i][j]]._insulation_thickness))
                     """Adjacent"""
                     if(self._material_map[i-1][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i-1][j] > 0):
-                        heat_res += 1/(self._agents[agent_id[i-1][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i-1][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i-1][j] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i-1][j]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i-1][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i-1][j]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i-1][j]]._insulation_thickness))
+                            
                     heat_exchange[i][j] += ((1/heat_res) *
-                                            (self._thermal_map[i-1][j]-self._thermal_map[i][j])/2)
+                                            (self._thermal_map[i-1][j]-self._thermal_map[i][j]))
 
                 if(j > 0):
                     heat_res = 0
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i][j] > 0):
-                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i][j-1] > 2 or self._material_map[i][j-1] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i][j]]._insulation_thickness))
                     """Adjacent"""
                     if(self._material_map[i][j-1] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i][j-1] > 0):
-                        heat_res += 1/(self._agents[agent_id[i-1][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i-1][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j-1] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i][j-1]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i][j-1]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i][j-1]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i][j-1]]._insulation_thickness))
+                            
                     heat_exchange[i][j] += ((1/heat_res)*(self._thermal_map[i]
-                                            [j-1]-self._thermal_map[i][j])/2)
+                                            [j-1]-self._thermal_map[i][j]))
 
-                if(i < self._env_size[0]-1 and j < self._env_size[0]-1):
+                if(i < self._env_size[0]-1):
                     heat_res = 0
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                      self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i][j] > 0):
-                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i+1][j] > 2 or self._material_map[i+1][j] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i][j]]._insulation_thickness))
                     """Adjacent"""
                     if(self._material_map[i+1][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i+1][j] > 0):
-                        heat_res += 1/(self._agents[agent_id[i+1][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i+1][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i+1][j] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i+1][j]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i+1][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i+1][j]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i+1][j]]._insulation_thickness))
+                    
                     heat_exchange[i][j] += ((1/heat_res) *
-                                            (self._thermal_map[i+1][j]-self._thermal_map[i][j])/2)
+                                            (self._thermal_map[i+1][j]-self._thermal_map[i][j]))
 
-                if(i < self._env_size[0]-1 and j < self._env_size[0]-1):
+                if(j < self._env_size[1]-1):
                     heat_res = 0
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i][j] > 0):
-                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i][j+1] > 2 or self._material_map[i][j+1] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i][j]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i][j]]._insulation_thickness))
                     """Adjacent"""
                     if(self._material_map[i][j+1] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       pow(self._grid_size, 2)/(self._grid_size/2))
+                                       self._grid_size*1.1/(self._grid_size/2))
                     elif(self._material_map[i][j+1] > 0):
-                        heat_res += 1/(self._agents[agent_id[i][j+1]]._internal_conductivity*pow(
-                            self._grid_size, 2)/(self._grid_size/2))
+                        heat_res += 1/(self._agents[agent_id[i][j+1]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j+1] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
-                            heat_res += 1/(self._agents[agent_id[i][j+1]]._external_conductivity*pow(
-                                self._grid_size, 2)/(self._agents[agent_id[i+1][j]]._insulation_thickness))
+                            heat_res += 1/(self._agents[agent_id[i][j+1]]._external_conductivity*self._grid_size*1.1/(self._agents[agent_id[i][j+1]]._insulation_thickness))
+                    
                     heat_exchange[i][j] += ((1/heat_res)*(self._thermal_map[i]
-                                            [j+1]-self._thermal_map[i][j])/2)
+                                            [j+1]-self._thermal_map[i][j]))
 
         """Update Thermal Map"""
-        self._thermal_map += heat_exchange/heat_capacity
+        self._thermal_map += ((heat_exchange/heat_capacity)/self._time_step_size)
 
         """Update Agent Temps"""
         for agent in self._agents:
