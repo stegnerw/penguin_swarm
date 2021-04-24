@@ -71,6 +71,7 @@ class Environment:
         self._time_step_size = time_step_size
         self._epochs = epochs
         self._make_gif = make_gif
+        self._image_dir = image_dir
 
         # Drawing environment
         self._drawing_env = np.ones(
@@ -97,12 +98,7 @@ class Environment:
         self._ambient_air_temp = ambient_air_temp
 
         # Initialize image directories
-        self._image_dir = PROJ_DIR.joinpath(image_dir)
-        self._image_dir.mkdir(mode=0o775, exist_ok=True)
-        self._image_dir = self._image_dir.joinpath(self._file_name)
-        self._image_dir.mkdir(mode=0o775, exist_ok=True)
         self._gif_img_dir = self._image_dir.joinpath("gif_imgs")
-        shutil.rmtree(self._gif_img_dir, ignore_errors=True)
         self._gif_img_dir.mkdir(mode=0o775, exist_ok=True)
         LOG.debug(f"Initialized Environment: {self._name}")
 

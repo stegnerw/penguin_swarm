@@ -5,10 +5,10 @@
 # Standard library
 import argparse
 import configparser
-import datetime
 import logging
 import random
 import pathlib
+import shutil
 # Packages
 import coloredlogs
 # Custom
@@ -89,7 +89,6 @@ def parse_config(config_file: str) -> configparser.ConfigParser:
     config_file : str
         Path to the configuration file
     """
-    config_file = pathlib.Path(config_file).resolve()
     if not config_file.exists():
         LOG.error(f"Config file not found {str(config_file)}")
         return None
@@ -126,15 +125,27 @@ def main(config_file: str, log_level: int) -> int:
         logger=LOG,
         milliseconds=True,
     )
+
+    # Parse config file
+    config_file = pathlib.Path(config_file).resolve()
     config = parse_config(config_file)
     if config is None:
         LOG.error("Could not read config file")
         return 1
     env_size = tuple(map(int, config["env"]["env_size"].split(", ")))
+
+    # Set up image dir
+    image_dir = PROJ_DIR.joinpath(config["paths"]["image_dir"])
+    image_dir.mkdir(mode=0o775, exist_ok=True)
+    image_dir = image_dir.joinpath(config_file.stem)
+    shutil.rmtree(image_dir, ignore_errors=True)
+    image_dir.mkdir(mode=0o775, exist_ok=True)
+
+    # Create environment
     env = Environment(
         log_level,
         config["general"]["name"],
-        config["paths"]["image_dir"],
+        image_dir,
         env_size,
         float(config["env"]["grid_size"]),
         float(config["env"]["time_step_size"]),
@@ -144,8 +155,12 @@ def main(config_file: str, log_level: int) -> int:
         float(config["env"]["ambient_temp"]),
         (config["general"]["make_gif"] == "True"),
     )
+
+    # Add agents to environment
     added_penguins = 0
-    while added_penguins < int(config["penguin"]["count"]):
+    max_penguins = int(config["penguin"]["count"])
+    max_iterations = max_penguins * 10
+    for _ in range(max_iterations):
         penguin = Penguin(
             random.randrange(env_size[0]),
             random.randrange(env_size[1]),
@@ -166,6 +181,10 @@ def main(config_file: str, log_level: int) -> int:
         )
         if env.add_agent(penguin):
             added_penguins += 1
+            if added_penguins >= max_penguins:
+                break
+
+    # Run the simulation
     env.run()
     LOG.info("Done.")
     logging.shutdown()
