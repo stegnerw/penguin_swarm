@@ -71,6 +71,10 @@ class Environment:
         self._alive_agents_plot = list()
         self._epochs_plot = list()
         self._temps_plot = list()
+        self._temps_error_std = list()
+        self._temps_error_interval = int(5)
+        self._temps_error_x = list()
+        self._temps_error_y = list()
 
         # Drawing environment
         self._drawing_env = np.ones(
@@ -120,7 +124,10 @@ class Environment:
         total_agents = np.sum([a.alive for a in self._agents])
         self._alive_agents = np.sum([a.alive for a in self._agents])
         self._alive_agents_plot.append(self._alive_agents / total_agents)
-        self._temps_plot.append(np.mean([a.core_temp for a in self._agents]))
+        self._temps_plot.append(np.mean([a.core_temp for a in self._agents if a.alive]))
+        self._temps_error_std.append(np.std([a.core_temp for a in self._agents if a.alive]))
+        self._temps_error_x.append(self._epoch)
+        self._temps_error_y.append(np.mean([a.core_temp for a in self._agents if a.alive]))
         self._epochs_plot.append(self._epoch)
         for epoch in range(self._epochs):
             LOG.info(f"Begin epoch {epoch + 1}/{self._epochs}: "
@@ -135,7 +142,11 @@ class Environment:
                 self._temps_plot.append(self._temps_plot[-1])
                 LOG.info("Simulation early stop due to 0 agent alive")
                 break
-            self._temps_plot.append(np.mean([a.core_temp for a in self._agents]))
+            if epoch % self._temps_error_interval == 0:
+                self._temps_error_std.append(np.std([a.core_temp for a in self._agents if a.alive]))
+                self._temps_error_x.append(self._epoch)
+                self._temps_error_y.append(np.mean([a.core_temp for a in self._agents if a.alive]))
+            self._temps_plot.append(np.mean([a.core_temp for a in self._agents if a.alive]))
         self.save_gif()
         self.plot_vs_epoch()
         shutil.rmtree(self._gif_img_dir, ignore_errors=True)
@@ -557,9 +568,16 @@ class Environment:
             label=f"{self._name}",
             color="red"
             )
+        temp_axis.errorbar(
+            self._temps_error_x,
+            self._temps_error_y,
+            yerr = self._temps_error_std,
+            label = f"{self._name}",
+            color = "red",
+        )
         temp_axis.set_ylim([self._agents[0]._low_death_threshold,
                             self._agents[0]._high_death_threshold])
-        temp_axis.set_ylabel("Average Core Temperature ($\degree$C)",
+        temp_axis.set_ylabel(r"Average Core Temperature ($\degree$C)",
                              color="red")
 
         fig.suptitle("Colony Health vs Epoch")
