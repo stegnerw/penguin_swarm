@@ -103,9 +103,9 @@ class Agent(ABC):
             # Closest policy target the closest agent
 
         # Decide to move toward/away from target, or stay in place
-        if self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_move_threshold:
+        if self.core_temp < self._low_move_threshold:
             target_pos = target_pos + self.position
-        elif self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_move_threshold:
+        elif self.core_temp > self._high_move_threshold:
             target_pos = -1*target_pos + self.position
         else:
             return np.array(self.position)
@@ -180,8 +180,8 @@ class Agent(ABC):
     @body_temp.setter
     def body_temp(self, body_temp: np.ndarray[float]) -> None:
         self._body_temp = body_temp
-        if (self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_death_threshold
-                or self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_death_threshold):
+        if (self.core_temp > self._high_death_threshold
+                or self.core_temp < self._low_death_threshold):
             self.kill()
 
     @property
@@ -208,9 +208,12 @@ class Agent(ABC):
         """np.ndarray[float] : Color to display the agent"""
         self._color = np.array(colorsys.hsv_to_rgb(
             0.5 - 0.5 *
-            (self._body_temp[self._body_radius-1][self._body_radius-1]
-             - self._low_death_threshold) /
+            (self.core_temp - self._low_death_threshold) /
             (self._high_death_threshold - self._low_death_threshold),
             1.0, 0.5
         ))
         return self._color
+
+    @property
+    def core_temp(self) -> float:
+        return self._body_temp[self._body_radius-1][self._body_radius-1]
