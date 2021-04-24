@@ -203,8 +203,7 @@ class Environment:
                     heat_exchange[i][j] += self._air_conductivity*4*self._grid_size*1.1*(self._ambient_air_temp-self._thermal_map[i][j])
                     
                 elif(self._material_map[i][j] == 1):
-                    heat_exchange[i][j] += self._agents[agent_id[i]
-                                                        [j]]._metabolism
+                    heat_exchange[i][j] += self._agents[agent_id[i][j]]._metabolism*pow(self._grid_size,2)*1.1
 
                 """Neighborhood Heat Exchange"""
                 if(i > 0):
@@ -212,7 +211,7 @@ class Environment:
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i][j] > 0):
                         heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i-1][j] > 2 or self._material_map[i-1][j] < 1)):
@@ -220,7 +219,7 @@ class Environment:
                     """Adjacent"""
                     if(self._material_map[i-1][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i-1][j] > 0):
                         heat_res += 1/(self._agents[agent_id[i-1][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i-1][j] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
@@ -234,7 +233,7 @@ class Environment:
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i][j] > 0):
                         heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i][j-1] > 2 or self._material_map[i][j-1] < 1)):
@@ -242,7 +241,7 @@ class Environment:
                     """Adjacent"""
                     if(self._material_map[i][j-1] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i][j-1] > 0):
                         heat_res += 1/(self._agents[agent_id[i-1][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j-1] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
@@ -256,7 +255,7 @@ class Environment:
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                      self._grid_size*1.1/(self._grid_size/2))
+                                      self._grid_size*1.1)
                     elif(self._material_map[i][j] > 0):
                         heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i+1][j] > 2 or self._material_map[i+1][j] < 1)):
@@ -264,7 +263,7 @@ class Environment:
                     """Adjacent"""
                     if(self._material_map[i+1][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i+1][j] > 0):
                         heat_res += 1/(self._agents[agent_id[i+1][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i+1][j] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):
@@ -278,7 +277,7 @@ class Environment:
                     """Agent"""
                     if(self._material_map[i][j] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i][j] > 0):
                         heat_res += 1/(self._agents[agent_id[i][j]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j] == 3 and (self._material_map[i][j+1] > 2 or self._material_map[i][j+1] < 1)):
@@ -286,7 +285,7 @@ class Environment:
                     """Adjacent"""
                     if(self._material_map[i][j+1] == 0):
                         heat_res += 1/(self._air_conductivity *
-                                       self._grid_size*1.1/(self._grid_size/2))
+                                       self._grid_size*1.1)
                     elif(self._material_map[i][j+1] > 0):
                         heat_res += 1/(self._agents[agent_id[i][j+1]]._internal_conductivity*self._grid_size*1.1/(self._grid_size/2))
                         if(self._material_map[i][j+1] == 3 and (self._material_map[i][j] > 2 or self._material_map[i][j] < 1)):

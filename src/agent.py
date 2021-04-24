@@ -106,7 +106,7 @@ class Agent(ABC):
         if self._body_temp[self._body_radius-1][self._body_radius-1] < self._low_move_threshold:
             target_pos = target_pos + self.position
         elif self._body_temp[self._body_radius-1][self._body_radius-1] > self._high_move_threshold:
-            target_pos = -1*target_pos + self.position
+            target_pos = -1*target_pos
         else:
             return np.array(self.position)
 
