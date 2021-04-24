@@ -70,6 +70,7 @@ class Environment:
         self._alive_agents = 0
         self._alive_agents_plot = list()
         self._epochs_plot = list()
+        self._temps_plot = list()
 
         # Drawing environment
         self._drawing_env = np.ones(
@@ -119,6 +120,7 @@ class Environment:
         total_agents = np.sum([a.alive for a in self._agents])
         self._alive_agents = np.sum([a.alive for a in self._agents])
         self._alive_agents_plot.append(self._alive_agents / total_agents)
+        self._temps_plot.append(np.mean([a.core_temp for a in self._agents]))
         self._epochs_plot.append(self._epoch)
         for epoch in range(self._epochs):
             LOG.info(f"Begin epoch {epoch + 1}/{self._epochs}: "
@@ -130,10 +132,12 @@ class Environment:
             self._alive_agents_plot.append(self._alive_agents / total_agents)
             self._epochs_plot.append(self._epoch)
             if np.sum([a.alive for a in self._agents]) == 0:
+                self._temps_plot.append(self._temps_plot[-1])
                 LOG.info("Simulation early stop due to 0 agent alive")
                 break
+            self._temps_plot.append(np.mean([a.core_temp for a in self._agents]))
         self.save_gif()
-        self.draw_alive_plot()
+        self.plot_vs_epoch()
         shutil.rmtree(self._gif_img_dir, ignore_errors=True)
 
     def update_thermal(self) -> None:
@@ -530,19 +534,37 @@ class Environment:
                 self._drawing_env[i, j] = np.array(
                     colorsys.hsv_to_rgb(normalized_temp[i, j], 0.25, 1.0))
 
-    def draw_alive_plot(self):
-        fig, axis = plt.subplots()
-        axis.plot(
+    def plot_vs_epoch(self):
+        fig, survive_axis = plt.subplots()
+
+        survive_axis.plot(
             self._epochs_plot,
             self._alive_agents_plot,
             label=f"{self._name}",
+            color="blue",
         )
-        axis.set_xlabel("Epoch")
-        axis.set_xlim([0, len(self._epochs_plot)])
-        axis.set_ylabel("Portion Surviving Penguins")
-        axis.set_title(f"Surviving Penguins for {self._name}")
+        survive_axis.set_xlabel("Epoch")
+        survive_axis.set_xlim([0, len(self._epochs_plot)])
+        survive_axis.set_ylim([0.0, 1.1])
+        survive_axis.set_ylabel("Portion Surviving Penguins",
+                                color="blue")
+
+
+        temp_axis = survive_axis.twinx()
+        temp_axis.plot(
+            self._epochs_plot,
+            self._temps_plot,
+            label=f"{self._name}",
+            color="red"
+            )
+        temp_axis.set_ylim([self._agents[0]._low_death_threshold,
+                            self._agents[0]._high_death_threshold])
+        temp_axis.set_ylabel("Average Core Temperature ($\degree$C)",
+                             color="red")
+
+        fig.suptitle("Colony Health vs Epoch")
         img_path = self._image_dir.joinpath(
-            f"{self._file_name}_survival_plot.png")
+            f"{self._file_name}_plot_vs_epoch.png")
         fig.savefig(img_path)
         fig.clf()
         plt.close()
