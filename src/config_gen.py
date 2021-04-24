@@ -126,10 +126,10 @@ def main(log_level: int) -> int:
         milliseconds=True,
     )
 
-    body_radii = [1, 2, 4, 7]
-    sense_radii = [5, 10, 25, 50, 100]
-    counts = [16, 32, 64, 128, 256]
-    movement_speeds = [1, 2, 5, 10, 20]
+    body_radii = [1, 3, 5]
+    sense_radii = [10, 25, 50, 100]
+    counts = [32]
+    movement_speeds = [2, 5, 10]
 
     for br in body_radii:
         for sr in sense_radii:
