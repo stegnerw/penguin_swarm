@@ -5,6 +5,8 @@
 img/
 *.mp4
 .vscode/
+# Don't want to add all auto-generated cfg files
+*.ini
 
 ###############################################################################
 # Python gitignore
