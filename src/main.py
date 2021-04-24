@@ -29,7 +29,7 @@ PROJ_DIR = SRC_DIR.parent
 # TODO: Make each section hold a dictionary where the value is a function to
 # parse the input properly.
 CONFIG_SECTIONS = {
-    "general": ["name"],
+    "general": ["name", "make_gif"],
     "paths": ["image_dir"],
     "env": [
         "env_size", "grid_size", "time_step_size", "epochs",
@@ -142,6 +142,7 @@ def main(config_file: str, log_level: int) -> int:
         float(config["env"]["air_conductivity"]),
         float(config["env"]["initial_temp"]),
         float(config["env"]["ambient_temp"]),
+        (config["general"]["make_gif"] == "True"),
     )
     added_penguins = 0
     while added_penguins < int(config["penguin"]["count"]):
