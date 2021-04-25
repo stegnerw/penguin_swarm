@@ -49,6 +49,7 @@ class Environment:
         air_conductivity: float,
         initial_air_temp: float,
         ambient_air_temp: float,
+        make_gif: bool,
     ):
         coloredlogs.install(
             level=log_level * 10,
@@ -67,6 +68,8 @@ class Environment:
         self._grid_size = grid_size
         self._time_step_size = time_step_size
         self._epochs = epochs
+        self._make_gif = make_gif
+        self._image_dir = image_dir
         self._alive_agents = 0
         self._alive_agents_plot = list()
         self._epochs_plot = list()
@@ -101,12 +104,7 @@ class Environment:
         self._ambient_air_temp = ambient_air_temp
 
         # Initialize image directories
-        self._image_dir = PROJ_DIR.joinpath(image_dir)
-        self._image_dir.mkdir(mode=0o775, exist_ok=True)
-        self._image_dir = self._image_dir.joinpath(self._file_name)
-        self._image_dir.mkdir(mode=0o775, exist_ok=True)
         self._gif_img_dir = self._image_dir.joinpath("gif_imgs")
-        shutil.rmtree(self._gif_img_dir, ignore_errors=True)
         self._gif_img_dir.mkdir(mode=0o775, exist_ok=True)
         LOG.debug(f"Initialized Environment: {self._name}")
 
@@ -431,6 +429,9 @@ class Environment:
 
     def draw(self) -> None:
         """Draw the environment and save it as a PNG"""
+        if not self._make_gif:
+            return
+        LOG.debug("Drawing env")
         self._drawing_env = np.ones(
             shape=(self.env_size[0], self.env_size[1], 3),
             dtype=float,
@@ -511,6 +512,8 @@ class Environment:
 
     def save_gif(self) -> None:
         """Save the GIF"""
+        if not self._make_gif:
+            return
         LOG.info("Generating GIF...")
         images = []
         for path in sorted(list(self._gif_img_dir.iterdir())):

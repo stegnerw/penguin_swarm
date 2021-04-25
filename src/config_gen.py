@@ -1,14 +1,12 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""This module is the main module.
+"""This module generates config files.
 """
 # Standard library
 import argparse
 import configparser
 import logging
-import random
 import pathlib
-import shutil
 # Packages
 import coloredlogs
 # Custom
@@ -19,11 +17,14 @@ from penguin import Penguin
 # Constant definitions
 ###############################################################################
 
-LOG = logging.getLogger("penguin_swarm.main")
+LOG = logging.getLogger("penguin_swarm.config_gen")
 
 # File paths
 SRC_DIR = pathlib.Path(__file__).parent.resolve()
-PROJ_DIR = SRC_DIR.parent
+CFG_DIR = SRC_DIR.joinpath("cfg")
+assert CFG_DIR.exists()
+TEMPLATE_CFG = CFG_DIR.joinpath("template.ini")
+assert TEMPLATE_CFG.exists()
 
 # Outline the required sections and options of the INI config files
 # TODO: Make each section hold a dictionary where the value is a function to
@@ -64,7 +65,6 @@ def parse_args(arg_list: list[str] = None):
         description="A penguin swarm simulator",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("config_file", help="Path to the configuration file")
     parser.add_argument(
         "-ll",
         "--log_level",
@@ -113,7 +113,7 @@ def parse_config(config_file: str) -> configparser.ConfigParser:
 ###############################################################################
 
 
-def main(config_file: str, log_level: int) -> int:
+def main(log_level: int) -> int:
     """Main function
 
     Parameters
@@ -126,67 +126,34 @@ def main(config_file: str, log_level: int) -> int:
         milliseconds=True,
     )
 
-    # Parse config file
-    config_file = pathlib.Path(config_file).resolve()
-    config = parse_config(config_file)
-    if config is None:
-        LOG.error("Could not read config file")
-        return 1
-    env_size = tuple(map(int, config["env"]["env_size"].split(", ")))
+    body_radii = [1, 3, 5]
+    sense_radii = [10, 25, 50, 100]
+    counts = [32]
+    movement_speeds = [2, 5, 10]
 
-    # Set up image dir
-    image_dir = PROJ_DIR.joinpath(config["paths"]["image_dir"])
-    image_dir.mkdir(mode=0o775, exist_ok=True)
-    image_dir = image_dir.joinpath(config_file.stem)
-    shutil.rmtree(image_dir, ignore_errors=True)
-    image_dir.mkdir(mode=0o775, exist_ok=True)
+    for br in body_radii:
+        for sr in sense_radii:
+            for c in counts:
+                for ms in movement_speeds:
+                    cfg_f_name = f"auto_br{br}_sr{sr}_c{c}_ms{ms}.ini"
+                    cfg_path = CFG_DIR.joinpath(cfg_f_name)
+                    cfg_name = f"BR={br}, SR={sr}, C={c}, MS={ms}"
 
-    # Create environment
-    env = Environment(
-        log_level,
-        config["general"]["name"],
-        image_dir,
-        env_size,
-        float(config["env"]["grid_size"]),
-        float(config["env"]["time_step_size"]),
-        int(config["env"]["epochs"]),
-        float(config["env"]["air_conductivity"]),
-        float(config["env"]["initial_temp"]),
-        float(config["env"]["ambient_temp"]),
-        (config["general"]["make_gif"] == "True"),
-    )
+                    # Parse config file
+                    config = parse_config(TEMPLATE_CFG)
+                    if config is None:
+                        LOG.error("Could not read config file")
+                        break
 
-    # Add agents to environment
-    added_penguins = 0
-    max_penguins = int(config["penguin"]["count"])
-    max_iterations = max_penguins * 10
-    for _ in range(max_iterations):
-        penguin = Penguin(
-            random.randrange(env_size[0]),
-            random.randrange(env_size[1]),
-            int(config["penguin"]["body_radius"]),
-            int(config["penguin"]["sense_radius"]),
-            float(config["penguin"]["body_temp"]),
-            float(config["penguin"]["low_death_threshold"]),
-            float(config["penguin"]["high_death_threshold"]),
-            float(config["penguin"]["low_move_threshold"]),
-            float(config["penguin"]["high_move_threshold"]),
-            float(config["penguin"]["internal_conductivity"]),
-            float(config["penguin"]["external_conductivity"]),
-            float(config["penguin"]["insulation_thickness"]),
-            float(config["penguin"]["density"]),
-            config["penguin"]["movement_policy"],
-            int(config["penguin"]["movement_speed"]),
-            float(config["penguin"]["metabolism"]),
-        )
-        if env.add_agent(penguin):
-            added_penguins += 1
-            if added_penguins >= max_penguins:
-                break
-    LOG.info(f"Added {added_penguins} agents.")
+                    # Overwrite testing configs
+                    config["general"]["name"] = cfg_name
+                    config["penguin"]["count"] = str(c)
+                    config["penguin"]["body_radius"] = str(br)
+                    config["penguin"]["sense_radius"] = str(sr)
+                    config["penguin"]["movement_speed"] = str(ms)
+                    with open(cfg_path, "w") as cfg_file:
+                        config.write(cfg_file)
 
-    # Run the simulation
-    env.run()
     LOG.info("Done.")
     logging.shutdown()
     return 0
