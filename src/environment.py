@@ -7,7 +7,6 @@ The Environment implements a container to hold agents and control interactions.
 # Standard library
 from __future__ import annotations
 import logging
-import configparser
 import pathlib
 import random
 import re
@@ -20,7 +19,6 @@ import numpy as np
 from PIL import Image
 # Custom
 from agent import Agent
-from penguin import Penguin
 
 LOG = logging.getLogger("penguin_swarm.environment")
 
@@ -44,7 +42,7 @@ class Environment:
         log_level: int,
         name: str,
         image_dir: str,
-        env_size: np.ndarray[int],
+        env_size: np.ndarray,
         grid_size: float,
         time_step_size: float,
         epochs: int,
@@ -72,6 +70,14 @@ class Environment:
         self._epochs = epochs
         self._make_gif = make_gif
         self._image_dir = image_dir
+        self._alive_agents = 0
+        self._alive_agents_plot = list()
+        self._epochs_plot = list()
+        self._temps_plot = list()
+        self._temps_error_std = list()
+        self._temps_error_interval = int(5)
+        self._temps_error_x = list()
+        self._temps_error_y = list()
 
         # Drawing environment
         self._drawing_env = np.ones(
@@ -113,16 +119,34 @@ class Environment:
         # Do that initialization in a separate function.
         # Draw initial board
         self.draw()
+        total_agents = np.sum([a.alive for a in self._agents])
+        self._alive_agents = np.sum([a.alive for a in self._agents])
+        self._alive_agents_plot.append(self._alive_agents / total_agents)
+        self._temps_plot.append(np.mean([a.core_temp for a in self._agents if a.alive]))
+        self._temps_error_std.append(np.std([a.core_temp for a in self._agents if a.alive]))
+        self._temps_error_x.append(self._epoch)
+        self._temps_error_y.append(np.mean([a.core_temp for a in self._agents if a.alive]))
+        self._epochs_plot.append(self._epoch)
         for epoch in range(self._epochs):
             LOG.info(f"Begin epoch {epoch + 1}/{self._epochs}: "
-                     f"{np.sum([a.alive for a in self._agents])}"
+                     f"{self._alive_agents}"
                      f"/{len(self._agents)} agents alive")
             self.run_epoch()
             self.update_thermal()
+            self._alive_agents = np.sum([a.alive for a in self._agents])
+            self._alive_agents_plot.append(self._alive_agents / total_agents)
+            self._epochs_plot.append(self._epoch)
             if np.sum([a.alive for a in self._agents]) == 0:
+                self._temps_plot.append(self._temps_plot[-1])
                 LOG.info("Simulation early stop due to 0 agent alive")
                 break
+            if epoch % self._temps_error_interval == 0:
+                self._temps_error_std.append(np.std([a.core_temp for a in self._agents if a.alive]))
+                self._temps_error_x.append(self._epoch)
+                self._temps_error_y.append(np.mean([a.core_temp for a in self._agents if a.alive]))
+            self._temps_plot.append(np.mean([a.core_temp for a in self._agents if a.alive]))
         self.save_gif()
+        self.plot_vs_epoch()
         shutil.rmtree(self._gif_img_dir, ignore_errors=True)
 
     def update_thermal(self) -> None:
@@ -521,6 +545,48 @@ class Environment:
             for j in range(self.env_size[1]):
                 self._drawing_env[i, j] = np.array(
                     colorsys.hsv_to_rgb(normalized_temp[i, j], 0.25, 1.0))
+
+    def plot_vs_epoch(self):
+        fig, survive_axis = plt.subplots()
+
+        survive_axis.plot(
+            self._epochs_plot,
+            self._alive_agents_plot,
+            label=f"{self._name}",
+            color="blue",
+        )
+        survive_axis.set_xlabel("Epoch")
+        survive_axis.set_xlim([0, len(self._epochs_plot)])
+        survive_axis.set_ylim([0.0, 1.1])
+        survive_axis.set_ylabel("Portion Surviving Penguins",
+                                color="blue")
+
+
+        temp_axis = survive_axis.twinx()
+        temp_axis.plot(
+            self._epochs_plot,
+            self._temps_plot,
+            label=f"{self._name}",
+            color="red"
+            )
+        temp_axis.errorbar(
+            self._temps_error_x,
+            self._temps_error_y,
+            yerr = self._temps_error_std,
+            label = f"{self._name}",
+            color = "red",
+        )
+        temp_axis.set_ylim([self._agents[0]._low_death_threshold,
+                            self._agents[0]._high_death_threshold])
+        temp_axis.set_ylabel(r"Average Core Temperature ($\degree$C)",
+                             color="red")
+
+        fig.suptitle("Colony Health vs Epoch")
+        img_path = self._image_dir.joinpath(
+            f"{self._file_name}_plot_vs_epoch.png")
+        fig.savefig(img_path)
+        fig.clf()
+        plt.close()
 
     def save_gif(self) -> None:
         """Save the GIF"""
