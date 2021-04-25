@@ -132,7 +132,7 @@ class Environment:
                      f"{self._alive_agents}"
                      f"/{len(self._agents)} agents alive")
             self.run_epoch()
-            self.update_thermal()
+            self.update_simple_thermal()
             self._alive_agents = np.sum([a.alive for a in self._agents])
             self._alive_agents_plot.append(self._alive_agents / total_agents)
             self._epochs_plot.append(self._epoch)
@@ -148,7 +148,54 @@ class Environment:
         self.save_gif()
         self.plot_vs_epoch()
         shutil.rmtree(self._gif_img_dir, ignore_errors=True)
-
+    
+    def update_simple_thermal(self) -> None:
+        A=self._grid_size*1.1
+        
+        agent_body_temps=[]
+        
+        for n in self._agents:                       
+            
+            Q_meta=n._metabolism*pow(self._grid_size, 2)*1.1
+            
+            n_avg_temp=n.body_temp[n.body_radius-1][n.body_radius-1]            
+            
+            Q_env=n._internal_conductivity*A*(self._ambient_air_temp-n_avg_temp)
+            
+            Q_pop=0
+            
+            for m in self._agents:
+                if(n is m):
+                    continue
+                else:
+                    m_avg_temp=m.body_temp[m.body_radius-1][m.body_radius-1]            
+                    
+                    dist=(self.manhatten_distance(n,m)-n.body_radius-m.body_radius+1)*self._grid_size
+                    
+                    heat_res=n._insulation_thickness/(n._external_conductivity*A)
+                    heat_res+=m._insulation_thickness/(m._external_conductivity*A)
+                    heat_res+=dist/(self._air_conductivity*A)
+                    
+                    Q_pop+=(1/heat_res)*(m_avg_temp-n_avg_temp)
+                    
+            Q=(Q_meta+Q_env+Q_pop)*self._time_step_size
+            
+            n_avg_temp+=Q/(n._density*pow(self._grid_size,2)*1.1*3E3)
+            
+            body_temp=np.zeros((2*n.body_radius-1,2*n.body_radius-1))                    
+            for i in range(n.body_radius):
+                    for j in range(n.body_radius - i):
+                        body_temp[n.body_radius-1+i][n.body_radius-1+j]=n_avg_temp
+                        body_temp[n.body_radius-1+i][n.body_radius-1-j]=n_avg_temp
+                        body_temp[n.body_radius-1-i][n.body_radius-1+j]=n_avg_temp
+                        body_temp[n.body_radius-1-i][n.body_radius-1-j]=n_avg_temp
+            
+            agent_body_temps.append(body_temp)
+            
+        for n in range(len(self._agents)):
+            
+            self._agents[n].body_temp=agent_body_temps[n]
+    
     def update_thermal(self) -> None:
         """Update the thermals of the environment.
 
@@ -335,7 +382,7 @@ class Environment:
 
 
         """Update Thermal Map"""
-        self._thermal_map += ((heat_exchange / heat_capacity) /
+        self._thermal_map += ((heat_exchange / heat_capacity) *
                               self._time_step_size)
         """Update Agent Temps"""
         for agent in self._agents:
@@ -436,7 +483,7 @@ class Environment:
             shape=(self.env_size[0], self.env_size[1], 3),
             dtype=float,
         )
-        self.draw_map()
+        #self.draw_map()
         for agent in self._agents:
             if agent.alive:
                 self.draw_agent(agent)
