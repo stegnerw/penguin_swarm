@@ -525,7 +525,7 @@ class Environment:
         images[0].save(
             gif_path,
             save_all=True,
-            duration=self._time_step_size,
+            duration=100,
             append_images=images[1:],
             loop=0,
         )
