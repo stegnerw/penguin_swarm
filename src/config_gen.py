@@ -135,7 +135,7 @@ def main(log_level: int) -> int:
         for sr in sense_radii:
             for c in counts:
                 for ms in movement_speeds:
-                    cfg_f_name = f"br{br}_sr{sr}_c{c}_ms{ms}.ini"
+                    cfg_f_name = f"auto_br{br}_sr{sr}_c{c}_ms{ms}.ini"
                     cfg_path = CFG_DIR.joinpath(cfg_f_name)
                     cfg_name = f"BR={br}, SR={sr}, C={c}, MS={ms}"
 
